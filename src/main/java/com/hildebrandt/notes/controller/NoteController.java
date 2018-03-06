@@ -5,12 +5,16 @@ import com.hildebrandt.notes.models.Note;
 import com.hildebrandt.notes.repositories.NoteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-@RestController
+@Controller
 @RequestMapping("/api") // declares that the url for all the apis in this controller will start with /api.
 public class NoteController {
 
@@ -19,8 +23,11 @@ public class NoteController {
 
     // Get All Notes:  (GET /api/notes)
     @GetMapping("/notes")
-    public List<Note> getAllNotes() {
-        return noteRepository.findAll();
+    public String getAllNotes(Model model) {
+        Set<Note> noteSet = new HashSet<>();
+        noteRepository.findAll().iterator().forEachRemaining(noteSet::add);
+        model.addAttribute("notes", noteSet);
+        return "index";
     }
 
     // Create a new Note
