@@ -1,70 +1,59 @@
 package com.hildebrandt.notes.controller;
 
-import com.hildebrandt.notes.exception.ResourceNotFoundException;
 import com.hildebrandt.notes.models.Note;
-import com.hildebrandt.notes.repositories.NoteRepository;
+import com.hildebrandt.notes.service.NoteService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 @Controller
-@RequestMapping("/api") // declares that the url for all the apis in this controller will start with /api.
 public class NoteController {
 
     @Autowired
-    NoteRepository noteRepository;
+    private NoteService noteService;
 
-    // Get All Notes:  (GET /api/notes)
+    //Get All notes
     @GetMapping("/notes")
     public String getAllNotes(Model model) {
-        Set<Note> noteSet = new HashSet<>();
-        noteRepository.findAll().iterator().forEachRemaining(noteSet::add);
-        model.addAttribute("notes", noteSet);
+        model.addAttribute("notes", noteService.getAll());
         return "index";
     }
 
-    // Create a new Note
-    //@RequestBody annotation is used to bind the request body with a method parameter.
-    //@Valid--> @NotBlank
-    @PostMapping("/notes")
-    public Note createNote(@Valid @RequestBody Note note) {
-        return noteRepository.save(note);
+    // Get a Single Note by Id
+    @GetMapping("/note/{id}")
+    public String getNoteById(@PathVariable(value = "id") Long noteId, Model model) {
+    Note note = noteService.findById(noteId);
+    model.addAttribute("note", note);
+    return "edit";
     }
 
-    // Get a Single Note
-    @GetMapping("/notes/{id}")
-    public Note getNoteById(@PathVariable(value = "id") Long noteId) {
-        return noteRepository.findById(noteId).orElseThrow(() -> new ResourceNotFoundException("Note", "id", noteId));
+    /*---Site for new book---*/
+    @RequestMapping( path = "/note/create")
+    public String loadForm(Model model) {
+        model.addAttribute("note", new Note());
+        return "create";
     }
 
-    // Update a Note
-    @PutMapping("/notes/{id}")
-    public Note updateNote(@PathVariable(value = "id") Long noteId, @Valid @RequestBody Note noteDetails) {
-
-        Note note = noteRepository.findById(noteId).orElseThrow(() -> new ResourceNotFoundException("Note", "id", noteId));
-
-        note.setTitle(noteDetails.getTitle());
-        note.setContent(noteDetails.getContent());
-
-        Note updatedNote = noteRepository.save(note);
-        return updatedNote;
+    /*---Add new Note---*/
+    @RequestMapping(path = "/note", method = RequestMethod.POST)
+    public String save(Note note) {
+        long id = noteService.create(note);
+        return "redirect:/notes";
     }
 
-    // Delete a Note
-    @DeleteMapping("/notes/{id}")
-    public ResponseEntity<?> deleteNote(@PathVariable(value = "id") Long noteId) {
-        Note note = noteRepository.findById(noteId).orElseThrow(() -> new ResourceNotFoundException("Note", "id", noteId));
+    /*---Update a book by id---*/
+    @RequestMapping(path = "/note/{id}", method = RequestMethod.POST)
+    public String update(@PathVariable("id") long id, Note note) {
+        noteService.update(id, note);
+        return "redirect:/notes";
+    }
 
-        noteRepository.delete(note);
-
-        return ResponseEntity.ok().build();
+    /*---Delete a book by id---*/
+    @RequestMapping(path = "/note/delete/{id}", method = RequestMethod.GET)
+    public String delete(@PathVariable("id") long id) {
+        noteService.delete(id);
+        return "redirect:/notes";
     }
 
 }

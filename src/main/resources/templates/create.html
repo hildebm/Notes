@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head lang="en">
+    <title>Edit Product Details</title>
+    <th:block th:include="layout/header"></th:block>
+</head>
+<body>
+<div class="container" >
+    <div class="row">
+        <div  class="col-md-2"></div>
+        <div  class="col-md-8 flashcard-lg">
+            <form th:object="${note}" th:action="@{/note}" th:method="post">
+                <div class="form-group heading">
+                    <h3>New Flashcard</h3>
+                </div>
+                <div class="form-group">
+                    <input type="hidden" class="form-control" th:field="*{id}"/>
+                </div>
+                <div class="form-group">
+                    <input type="text" placeholder="title" class="form-control" id="title" aria-describedby="title" th:field="*{title}">
+                </div>
+                <div class="form-group">
+                    <textarea rows="8" placeholder="content" type="textarea" class="form-control" id="description" th:field="*{content}"/></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Create</button>
+                <a th:href="@{'/notes'}" class="btn btn-default">Cancel</a>
+            </form>
+        </div>
+        <div  class="col-md-2"></div>
+    </div>
+</div>
+</body>
+</html>
